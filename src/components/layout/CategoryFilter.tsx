@@ -1,36 +1,36 @@
 import React from 'react';
-import { Category } from '../../types';
 
 interface CategoryFilterProps {
-  categories: Category[];
-  activeCategory: Category | 'All';
-  onSelectCategory: (category: Category | 'All') => void;
+  items: string[];
+  activeItem: string;
+  onSelectItem: (item: any) => void;
+  allLabel?: string;
 }
 
-export function CategoryFilter({ categories, activeCategory, onSelectCategory }: CategoryFilterProps) {
+export function CategoryFilter({ items, activeItem, onSelectItem, allLabel = "All" }: CategoryFilterProps) {
   return (
     <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-6 px-6 md:mx-0 md:px-0">
       <button
-        onClick={() => onSelectCategory('All')}
+        onClick={() => onSelectItem('All')}
         className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-          activeCategory === 'All'
+          activeItem === 'All'
             ? 'bg-primary text-white shadow-sm'
             : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
         }`}
       >
-        All Resources
+        {allLabel}
       </button>
-      {categories.map((category) => (
+      {items.map((item) => (
         <button
-          key={category}
-          onClick={() => onSelectCategory(category)}
+          key={item}
+          onClick={() => onSelectItem(item)}
           className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-            activeCategory === category
+            activeItem === item
               ? 'bg-primary text-white shadow-sm'
               : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
           }`}
         >
-          {category}
+          {item.charAt(0).toUpperCase() + item.slice(1)}
         </button>
       ))}
     </div>

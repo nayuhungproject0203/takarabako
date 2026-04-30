@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Resource, Category } from './types';
+import { Resource, Topic, ResourceType } from './types';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { Header } from './components/layout/Header';
 import { CategoryFilter } from './components/layout/CategoryFilter';
@@ -8,14 +8,19 @@ import { ResourceForm } from './components/resource/ResourceForm';
 import { Modal } from './components/ui/Modal';
 import { X } from 'lucide-react';
 
-const CATEGORIES: Category[] = [
-  'AI Tools', 'Frontend Learning', 'Writing', 'Psychology', 'Newsletters', 'Blogs', 'Other'
+const TOPICS: Topic[] = [
+  'Frontend', 'AI', 'Writing', 'Psychology', 'Research', 'Productivity', 'Design', 'Career'
+];
+
+const RESOURCE_TYPES: ResourceType[] = [
+  'tool', 'article', 'blog', 'newsletter', 'course', 'video', 'website'
 ];
 
 function App() {
   const [resources, setResources] = useLocalStorage<Resource[]>('knowbase_resources', []);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState<Category | 'All'>('All');
+  const [activeTopic, setActiveTopic] = useState<Topic | 'All'>('All');
+  const [activeType, setActiveType] = useState<ResourceType | 'All'>('All');
   const [activeTags, setActiveTags] = useState<string[]>([]);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,14 +34,15 @@ function App() {
         res.note?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         res.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
       
-      const matchesCategory = activeCategory === 'All' || res.category === activeCategory;
+      const matchesTopic = activeTopic === 'All' || res.topic === activeTopic;
+      const matchesType = activeType === 'All' || res.type === activeType;
       
       const matchesTags = activeTags.length === 0 || 
         activeTags.every(t => res.tags.includes(t));
 
-      return matchesSearch && matchesCategory && matchesTags;
+      return matchesSearch && matchesTopic && matchesType && matchesTags;
     }).sort((a, b) => b.createdAt - a.createdAt);
-  }, [resources, searchQuery, activeCategory, activeTags]);
+  }, [resources, searchQuery, activeTopic, activeType, activeTags]);
 
   const handleAddOrEdit = (data: Omit<Resource, 'id' | 'createdAt' | 'updatedAt'>) => {
     if (editingResource) {
@@ -94,11 +100,20 @@ function App() {
 
       <main className="max-w-7xl mx-auto px-6 md:px-8 py-8">
         <div className="mb-8 space-y-6">
-          <CategoryFilter 
-            categories={CATEGORIES}
-            activeCategory={activeCategory}
-            onSelectCategory={setActiveCategory}
-          />
+          <div className="space-y-4">
+            <CategoryFilter 
+              items={TOPICS}
+              activeItem={activeTopic}
+              onSelectItem={setActiveTopic}
+              allLabel="All Topics"
+            />
+            <CategoryFilter 
+              items={RESOURCE_TYPES}
+              activeItem={activeType}
+              onSelectItem={setActiveType}
+              allLabel="All Types"
+            />
+          </div>
 
           {activeTags.length > 0 && (
             <div className="flex items-center gap-2 flex-wrap animate-in fade-in slide-in-from-top-2 duration-300">
@@ -136,7 +151,8 @@ function App() {
                 onEdit={openEditModal}
                 onDelete={handleDelete}
                 onTagClick={toggleTag}
-                onCategoryClick={setActiveCategory}
+                onTopicClick={setActiveTopic}
+                onTypeClick={setActiveType}
               />
             ))}
           </div>

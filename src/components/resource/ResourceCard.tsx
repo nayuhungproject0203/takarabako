@@ -7,7 +7,8 @@ interface ResourceCardProps {
   onEdit: (resource: Resource) => void;
   onDelete: (id: string) => void;
   onTagClick: (tag: string) => void;
-  onCategoryClick: (category: string) => void;
+  onTopicClick: (topic: string) => void;
+  onTypeClick: (type: string) => void;
 }
 
 const TypeIcon = ({ type, className = "" }: { type: Resource['type']; className?: string }) => {
@@ -23,7 +24,7 @@ const TypeIcon = ({ type, className = "" }: { type: Resource['type']; className?
   }
 };
 
-export function ResourceCard({ resource, onEdit, onDelete, onTagClick, onCategoryClick }: ResourceCardProps) {
+export function ResourceCard({ resource, onEdit, onDelete, onTagClick, onTopicClick, onTypeClick }: ResourceCardProps) {
   const formattedDate = new Date(resource.createdAt).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -35,10 +36,10 @@ export function ResourceCard({ resource, onEdit, onDelete, onTagClick, onCategor
       <div className="flex justify-between items-start mb-3 gap-4">
         <div>
           <button 
-            onClick={() => onCategoryClick(resource.category)}
+            onClick={() => onTopicClick(resource.topic)}
             className="text-xs font-medium text-primary hover:text-primary-dark transition-colors mb-1.5 uppercase tracking-wider bg-primary-light px-2 py-0.5 rounded-full inline-block"
           >
-            {resource.category}
+            {resource.topic}
           </button>
           <h3 className="text-lg font-semibold text-gray-900 leading-tight">
             <a 
@@ -71,10 +72,13 @@ export function ResourceCard({ resource, onEdit, onDelete, onTagClick, onCategor
         </div>
       </div>
 
-      <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-4 bg-gray-50 self-start px-2 py-1 rounded-md">
+      <button 
+        onClick={() => onTypeClick(resource.type)}
+        className="flex items-center gap-1.5 text-xs text-gray-500 mb-4 bg-gray-50 hover:bg-gray-100 transition-colors self-start px-2 py-1 rounded-md"
+      >
         <TypeIcon type={resource.type} />
         <span className="capitalize">{resource.type}</span>
-      </div>
+      </button>
 
       {resource.note && (
         <p className="text-gray-600 text-sm mb-4 line-clamp-3 italic">

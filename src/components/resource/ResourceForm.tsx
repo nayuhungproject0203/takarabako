@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Resource, Category, ResourceType } from '../../types';
+import { Resource, Topic, ResourceType } from '../../types';
 import { Input, Select, Textarea } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { TagInput } from './TagInput';
@@ -10,8 +10,8 @@ interface ResourceFormProps {
   onCancel: () => void;
 }
 
-const CATEGORIES: Category[] = [
-  'AI Tools', 'Frontend Learning', 'Writing', 'Psychology', 'Newsletters', 'Blogs', 'Other'
+const TOPICS: Topic[] = [
+  'Frontend', 'AI', 'Writing', 'Psychology', 'Research', 'Productivity', 'Design', 'Career'
 ];
 
 const RESOURCE_TYPES: ResourceType[] = [
@@ -23,7 +23,7 @@ export function ResourceForm({ initialData, onSubmit, onCancel }: ResourceFormPr
     title: initialData?.title || '',
     url: initialData?.url || '',
     type: initialData?.type || 'website' as ResourceType,
-    category: initialData?.category || 'Other' as Category,
+    topic: initialData?.topic || 'Frontend' as Topic,
     tags: initialData?.tags || [],
     note: initialData?.note || ''
   });
@@ -76,11 +76,11 @@ export function ResourceForm({ initialData, onSubmit, onCancel }: ResourceFormPr
 
       <div className="grid grid-cols-2 gap-4">
         <Select
-          label="Category"
-          value={formData.category}
-          onChange={(e) => setFormData(p => ({ ...p, category: e.target.value as Category }))}
+          label="Topic"
+          value={formData.topic}
+          onChange={(e) => setFormData(p => ({ ...p, topic: e.target.value as Topic }))}
         >
-          {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+          {TOPICS.map(t => <option key={t} value={t}>{t}</option>)}
         </Select>
 
         <Select
