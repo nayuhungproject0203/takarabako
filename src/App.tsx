@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Resource, Topic, ResourceType } from './types';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { Header } from './components/layout/Header';
-import { CategoryFilter } from './components/layout/CategoryFilter';
+import { SidebarFilter } from './components/layout/SidebarFilter';
 import { ResourceCard } from './components/resource/ResourceCard';
 import { ResourceForm } from './components/resource/ResourceForm';
 import { Modal } from './components/ui/Modal';
@@ -98,25 +98,23 @@ function App() {
         onAddClick={openAddModal}
       />
 
-      <main className="max-w-7xl mx-auto px-6 md:px-8 py-8">
-        <div className="mb-8 space-y-6">
-          <div className="space-y-4">
-            <CategoryFilter 
-              items={TOPICS}
-              activeItem={activeTopic}
-              onSelectItem={setActiveTopic}
-              allLabel="All Topics"
-            />
-            <CategoryFilter 
-              items={RESOURCE_TYPES}
-              activeItem={activeType}
-              onSelectItem={setActiveType}
-              allLabel="All Types"
+      <main className="max-w-7xl mx-auto px-6 md:px-8 py-8 flex flex-col md:flex-row gap-8 items-start">
+        <aside className="w-full md:w-56 shrink-0 sticky top-24">
+          <div className="space-y-8">
+            <SidebarFilter 
+              types={RESOURCE_TYPES}
+              topics={TOPICS}
+              activeType={activeType}
+              activeTopic={activeTopic}
+              onSelectType={setActiveType}
+              onSelectTopic={setActiveTopic}
             />
           </div>
+        </aside>
 
+        <div className="flex-1 min-w-0">
           {activeTags.length > 0 && (
-            <div className="flex items-center gap-2 flex-wrap animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="flex items-center gap-2 flex-wrap animate-in fade-in slide-in-from-top-2 duration-300 mb-6">
               <span className="text-sm text-gray-500 font-medium">Active Filters:</span>
               {activeTags.map(tag => (
                 <span 
@@ -140,7 +138,6 @@ function App() {
               </button>
             </div>
           )}
-        </div>
 
         {filteredResources.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 auto-rows-max items-start">
@@ -174,6 +171,7 @@ function App() {
             )}
           </div>
         )}
+        </div>
       </main>
 
       <Modal 
