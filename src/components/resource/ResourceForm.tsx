@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Resource, Topic, ResourceType } from '../../types';
+import { Resource, ResourceType } from '../../types';
 import { Input, Select, Textarea } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { TagInput } from './TagInput';
@@ -10,12 +10,8 @@ interface ResourceFormProps {
   onCancel: () => void;
 }
 
-const TOPICS: Topic[] = [
-  'Frontend', 'AI', 'Writing', 'Psychology', 'Research', 'Productivity', 'Design', 'Career'
-];
-
 const RESOURCE_TYPES: ResourceType[] = [
-  'tool', 'article', 'blog', 'newsletter', 'course', 'video', 'website'
+  'tool', 'article', 'blog', 'newsletter', 'course', 'video', 'website', 'quote', 'book'
 ];
 
 export function ResourceForm({ initialData, onSubmit, onCancel }: ResourceFormProps) {
@@ -23,9 +19,11 @@ export function ResourceForm({ initialData, onSubmit, onCancel }: ResourceFormPr
     title: initialData?.title || '',
     url: initialData?.url || '',
     type: initialData?.type || 'website' as ResourceType,
-    topic: initialData?.topic || 'Frontend' as Topic,
     tags: initialData?.tags || [],
-    note: initialData?.note || ''
+    note: initialData?.note || '',
+    quote: initialData?.quote || '',
+    author: initialData?.author || '',
+    source: initialData?.source || ''
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -35,14 +33,28 @@ export function ResourceForm({ initialData, onSubmit, onCancel }: ResourceFormPr
     
     // Basic validation
     const newErrors: Record<string, string> = {};
-    if (!formData.title.trim()) newErrors.title = 'Title is required';
-    if (!formData.url.trim()) {
-      newErrors.url = 'URL is required';
+    if (formData.type === 'quote') {
+      if (!formData.quote?.trim()) newErrors.quote = 'Quote text is required';
+    } else if (formData.type === 'book') {
+      if (!formData.title.trim()) newErrors.title = 'Title is required';
+      if (!formData.author?.trim()) newErrors.author = 'Author is required';
+      if (formData.url.trim()) {
+        try {
+          new URL(formData.url);
+        } catch {
+          newErrors.url = 'Please enter a valid URL';
+        }
+      }
     } else {
-      try {
-        new URL(formData.url); // Simple URL validation
-      } catch {
-        newErrors.url = 'Please enter a valid URL';
+      if (!formData.title.trim()) newErrors.title = 'Title is required';
+      if (!formData.url.trim()) {
+        newErrors.url = 'URL is required';
+      } else {
+        try {
+          new URL(formData.url); // Simple URL validation
+        } catch {
+          newErrors.url = 'Please enter a valid URL';
+        }
       }
     }
 
@@ -56,33 +68,7 @@ export function ResourceForm({ initialData, onSubmit, onCancel }: ResourceFormPr
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-      <Input
-        label="Title"
-        value={formData.title}
-        onChange={(e) => setFormData(p => ({ ...p, title: e.target.value }))}
-        error={errors.title}
-        placeholder="e.g., React Official Documentation"
-        autoFocus
-      />
-
-      <Input
-        label="URL"
-        type="url"
-        value={formData.url}
-        onChange={(e) => setFormData(p => ({ ...p, url: e.target.value }))}
-        error={errors.url}
-        placeholder="https://..."
-      />
-
-      <div className="grid grid-cols-2 gap-4">
-        <Select
-          label="Topic"
-          value={formData.topic}
-          onChange={(e) => setFormData(p => ({ ...p, topic: e.target.value as Topic }))}
-        >
-          {TOPICS.map(t => <option key={t} value={t}>{t}</option>)}
-        </Select>
-
+      <div className="mb-4">
         <Select
           label="Type"
           value={formData.type}
@@ -95,6 +81,78 @@ export function ResourceForm({ initialData, onSubmit, onCancel }: ResourceFormPr
           ))}
         </Select>
       </div>
+
+      {formData.type === 'quote' ? (
+        <>
+          <Textarea
+            label="Quote Text"
+            value={formData.quote}
+            onChange={(e) => setFormData(p => ({ ...p, quote: e.target.value }))}
+            error={errors.quote}
+            placeholder="Enter the quote..."
+            rows={3}
+            autoFocus
+          />
+          <Input
+            label="Author (Optional)"
+            value={formData.author}
+            onChange={(e) => setFormData(p => ({ ...p, author: e.target.value }))}
+            placeholder="Who said this?"
+          />
+          <Input
+            label="Source (Optional)"
+            value={formData.source}
+            onChange={(e) => setFormData(p => ({ ...p, source: e.target.value }))}
+            placeholder="Where is it from? (Book, URL, etc.)"
+          />
+        </>
+      ) : formData.type === 'book' ? (
+        <>
+          <Input
+            label="Book Title"
+            value={formData.title}
+            onChange={(e) => setFormData(p => ({ ...p, title: e.target.value }))}
+            error={errors.title}
+            placeholder="e.g., Atomic Habits"
+            autoFocus
+          />
+          <Input
+            label="Author"
+            value={formData.author}
+            onChange={(e) => setFormData(p => ({ ...p, author: e.target.value }))}
+            error={errors.author}
+            placeholder="e.g., James Clear"
+          />
+          <Input
+            label="Source URL (Optional)"
+            type="url"
+            value={formData.url}
+            onChange={(e) => setFormData(p => ({ ...p, url: e.target.value }))}
+            error={errors.url}
+            placeholder="https://..."
+          />
+        </>
+      ) : (
+        <>
+          <Input
+            label="Title"
+            value={formData.title}
+            onChange={(e) => setFormData(p => ({ ...p, title: e.target.value }))}
+            error={errors.title}
+            placeholder="e.g., React Official Documentation"
+            autoFocus
+          />
+
+          <Input
+            label="URL"
+            type="url"
+            value={formData.url}
+            onChange={(e) => setFormData(p => ({ ...p, url: e.target.value }))}
+            error={errors.url}
+            placeholder="https://..."
+          />
+        </>
+      )}
 
       <TagInput
         label="Tags"

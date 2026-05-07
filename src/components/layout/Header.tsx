@@ -6,17 +6,21 @@ interface HeaderProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   onAddClick: () => void;
+  onLogoClick?: () => void;
 }
 
-export function Header({ searchQuery, onSearchChange, onAddClick }: HeaderProps) {
+export function Header({ searchQuery, onSearchChange, onAddClick, onLogoClick }: HeaderProps) {
   return (
     <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-gray-200/50 py-4 px-6 md:px-8 flex flex-col sm:flex-row gap-4 items-center justify-between">
-      <div className="flex items-center gap-2 w-full sm:w-auto">
+      <button 
+        onClick={onLogoClick}
+        className="flex items-center gap-2 w-full sm:w-auto hover:opacity-80 transition-opacity focus:outline-none"
+      >
         <div className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center font-bold text-xl shadow-sm">
-          K
+          t
         </div>
-        <h1 className="text-xl font-bold text-gray-900 tracking-tight">KnowBase</h1>
-      </div>
+        <h1 className="text-xl font-bold text-gray-900 tracking-tight">takarabako</h1>
+      </button>
 
       <div className="flex-1 w-full sm:max-w-md relative">
         <div className="relative">
