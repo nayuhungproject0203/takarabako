@@ -1,4 +1,4 @@
-export type ResourceType = 'tool' | 'article' | 'blog' | 'newsletter' | 'course' | 'video' | 'website' | 'quote' | 'book';
+export type ResourceType = 'tool' | 'essay' | 'newsletter' | 'course' | 'video' | 'website' | 'quote' | 'book';
 
 export interface Resource {
   id: string;

@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Resource, ResourceType } from '../../types';
 import { Input, Select, Textarea } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { TagInput } from './TagInput';
+import { detectItemType, fetchYouTubeMetadata } from '../../utils/urlParser';
+import { Loader2 } from 'lucide-react';
 
 interface ResourceFormProps {
   initialData?: Resource;
@@ -11,7 +13,7 @@ interface ResourceFormProps {
 }
 
 const RESOURCE_TYPES: ResourceType[] = [
-  'tool', 'article', 'blog', 'newsletter', 'course', 'video', 'website', 'quote', 'book'
+  'tool', 'essay', 'newsletter', 'video', 'course', 'website', 'book', 'quote'
 ];
 
 export function ResourceForm({ initialData, onSubmit, onCancel }: ResourceFormProps) {
@@ -27,6 +29,51 @@ export function ResourceForm({ initialData, onSubmit, onCancel }: ResourceFormPr
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isFetchingMetadata, setIsFetchingMetadata] = useState(false);
+  const lastFetchedUrl = useRef(initialData?.url || '');
+
+  useEffect(() => {
+    const url = formData.url.trim();
+    if (!url || url === lastFetchedUrl.current) return;
+
+    const timeoutId = setTimeout(async () => {
+      try {
+        new URL(url);
+      } catch {
+        return; // Invalid URL, ignore
+      }
+
+      lastFetchedUrl.current = url;
+      
+      const detectedType = detectItemType(url);
+      if (detectedType && detectedType !== formData.type) {
+        setFormData(p => ({ ...p, type: detectedType }));
+      }
+
+      if (url.includes('books.com.tw')) {
+        setFormData(p => ({
+          ...p,
+          source: p.source || '博客來'
+        }));
+      }
+
+      if (detectedType === 'video' && (url.includes('youtube.com') || url.includes('youtu.be'))) {
+        setIsFetchingMetadata(true);
+        const metadata = await fetchYouTubeMetadata(url);
+        setIsFetchingMetadata(false);
+        
+        if (metadata) {
+          setFormData(p => ({
+            ...p,
+            title: p.title || metadata.title,
+            author: p.author || metadata.author_name
+          }));
+        }
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [formData.url, formData.type]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +84,6 @@ export function ResourceForm({ initialData, onSubmit, onCancel }: ResourceFormPr
       if (!formData.quote?.trim()) newErrors.quote = 'Quote text is required';
     } else if (formData.type === 'book') {
       if (!formData.title.trim()) newErrors.title = 'Title is required';
-      if (!formData.author?.trim()) newErrors.author = 'Author is required';
       if (formData.url.trim()) {
         try {
           new URL(formData.url);
@@ -117,11 +163,17 @@ export function ResourceForm({ initialData, onSubmit, onCancel }: ResourceFormPr
             autoFocus
           />
           <Input
-            label="Author"
+            label="Author (Optional)"
             value={formData.author}
             onChange={(e) => setFormData(p => ({ ...p, author: e.target.value }))}
             error={errors.author}
             placeholder="e.g., James Clear"
+          />
+          <Input
+            label="Source / Publisher (Optional)"
+            value={formData.source}
+            onChange={(e) => setFormData(p => ({ ...p, source: e.target.value }))}
+            placeholder="e.g., 博客來, Amazon"
           />
           <Input
             label="Source URL (Optional)"
@@ -144,13 +196,48 @@ export function ResourceForm({ initialData, onSubmit, onCancel }: ResourceFormPr
           />
 
           <Input
-            label="URL"
+            label={
+              <div className="flex items-center gap-2">
+                URL
+                {isFetchingMetadata && (
+                  <span className="flex items-center gap-1 text-xs text-primary font-normal">
+                    <Loader2 size={12} className="animate-spin" /> Fetching details...
+                  </span>
+                )}
+              </div>
+            }
             type="url"
             value={formData.url}
             onChange={(e) => setFormData(p => ({ ...p, url: e.target.value }))}
             error={errors.url}
             placeholder="https://..."
           />
+
+          {formData.type === 'video' && (
+            <Input
+              label="Creator / Channel (Optional)"
+              value={formData.author}
+              onChange={(e) => setFormData(p => ({ ...p, author: e.target.value }))}
+              placeholder="e.g., YouTube Channel Name"
+            />
+          )}
+
+          {(formData.type === 'essay' || formData.type === 'website') && (
+            <>
+              <Input
+                label="Author (Optional)"
+                value={formData.author}
+                onChange={(e) => setFormData(p => ({ ...p, author: e.target.value }))}
+                placeholder="e.g., Paul Graham"
+              />
+              <Input
+                label="Source / Site Name (Optional)"
+                value={formData.source}
+                onChange={(e) => setFormData(p => ({ ...p, source: e.target.value }))}
+                placeholder="e.g., Medium, Personal Blog"
+              />
+            </>
+          )}
         </>
       )}
 
@@ -173,7 +260,7 @@ export function ResourceForm({ initialData, onSubmit, onCancel }: ResourceFormPr
           Cancel
         </Button>
         <Button type="submit">
-          {initialData ? 'Save Changes' : 'Add Resource'}
+          {initialData ? 'Save Changes' : 'Add Item'}
         </Button>
       </div>
     </form>

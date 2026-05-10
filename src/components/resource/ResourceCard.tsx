@@ -1,20 +1,18 @@
-import React from 'react';
-import { Resource } from '../../types';
-import { ExternalLink, Edit2, Trash2, Box, FileText, Rss, BookOpen, Video, Globe, Mail, Quote, Copy, Book } from 'lucide-react';
+import { Resource, ResourceType } from '../../types';
+import { ExternalLink, Edit2, Trash2, Box, FileText, BookOpen, Video, Globe, Mail, Quote, Copy, Book } from 'lucide-react';
 
 interface ResourceCardProps {
   resource: Resource;
   onEdit: (resource: Resource) => void;
   onDelete: (id: string) => void;
   onTagClick: (tag: string) => void;
-  onTypeClick: (type: string) => void;
+  onTypeClick: (type: ResourceType | 'All' | 'Home') => void;
 }
 
 const TypeIcon = ({ type, className = "" }: { type: Resource['type']; className?: string }) => {
   switch (type) {
     case 'tool': return <Box className={className} size={16} />;
-    case 'article': return <FileText className={className} size={16} />;
-    case 'blog': return <Rss className={className} size={16} />;
+    case 'essay': return <FileText className={className} size={16} />;
     case 'course': return <BookOpen className={className} size={16} />;
     case 'video': return <Video className={className} size={16} />;
     case 'website': return <Globe className={className} size={16} />;

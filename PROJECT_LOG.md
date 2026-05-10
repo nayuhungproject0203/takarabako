@@ -26,6 +26,21 @@
   - **動態表單與資料驗證**：修改了新增/編輯表單，當類型選擇為 Quote 時，自動隱藏 Title 與 URL 欄位，改為顯示 Quote Text (必填)、Author (選填) 與 Source (選填)。
   - **客製化卡片渲染**：針對 Quote 類型的卡片進行特殊排版（加入 Blockquote 樣式、隱藏外部連結按鈕），並新增專屬的「一鍵複製 (Copy)」快捷操作。
 
+### v1.3.0 - 視覺重構與架構升級：集合大廳與類型精簡 (Collection Dashboard & UI Polish)
+- **設計目標**：解決首頁所有資源混雜導致不易閱讀的問題，並進一步精簡、收斂資源分類，使應用更像一個私人的「閱讀與工具大廳」。
+- **核心變更**：
+  - **全新首頁 (Collection Dashboard)**：預設首頁從「所有資源列表」改為「集合大廳」。利用精緻的分類卡片（顯示各類別描述與數量）作為導覽入口，兼顧搜尋的無縫切換。
+  - **Quote 卡片視覺升級**：將引文 (Quote) 卡片重構為類似雜誌排版的「編輯風格 (Editorial)」，加寬版面、優化字體行距，並將作者與來源獨立為詮釋資料 (Metadata) 區塊。
+  - **新增 Book (書籍) 類型**：支援儲存書籍資訊，包含書名與作者，並在卡片標題下方優雅地顯示作者名稱。
+  - **名詞與類型精簡**：將原本的 `Article` 與 `Blog` 合併為更具深度的 `Essay`（文章 / 隨筆）。全站的「Add Resource」更名為「Add Item」，並加入自動化的資料平滑升級機制，確保舊資料能自動轉移到新類型。
+
+### v1.4.0 - 智慧輸入：網址自動偵測與 Metadata 填寫 (URL Auto-Fill & Detection)
+- **設計目標**：減少使用者新增資源時的手動輸入負擔，提升操作流暢度，同時維持無後端的輕量化純前端架構。
+- **核心變更**：
+  - **智慧網址判斷**：實作 `urlParser.ts` 工具，當使用者在表單貼上網址時，會自動判斷網域並切換至對應的類型（例如：`youtube.com` → Video, `substack.com` → Newsletter, `goodreads.com` → Book）。
+  - **YouTube Metadata 自動抓取**：利用 YouTube 官方無 CORS 限制的 oEmbed API，在貼上影片網址後自動抓取並填入「影片標題」與「頻道名稱」。
+  - **無縫表單體驗**：為 Video 類型新增了選填的 `Creator / Channel` 欄位來存放頻道資訊，並在網址欄位加入即時的 Loading 提示。所有自動填寫行為皆不會覆蓋使用者的手動輸入，保留最大彈性。
+
 ---
 
 ## 📁 專案目錄與檔案結構說明
@@ -45,6 +60,10 @@
 ### `src/hooks/` (自訂 Hooks)
 - **`useLocalStorage.ts`**
   處理本地儲存的 Custom Hook。負責將狀態自動同步至瀏覽器的 `localStorage`，確保重新整理後資料不會遺失。
+
+### `src/utils/` (輔助工具)
+- **`urlParser.ts`**
+  負責處理網址相關邏輯的工具檔案。包含 `detectItemType`（根據網域判斷資源類型）與 `fetchYouTubeMetadata`（透過 oEmbed API 獲取 YouTube 影片標題與作者）。
 
 ### `src/components/layout/` (佈局與整體結構元件)
 - **`Header.tsx`**

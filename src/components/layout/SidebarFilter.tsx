@@ -1,11 +1,11 @@
-import React from 'react';
+import { ResourceType } from '../../types';
 
 interface SidebarFilterProps {
-  types: string[];
+  types: ResourceType[];
   tags: string[];
-  activeType: string;
+  activeType: ResourceType | 'All' | 'Home';
   activeTag: string;
-  onSelectType: (type: string) => void;
+  onSelectType: (type: ResourceType | 'All' | 'Home') => void;
   onSelectTag: (tag: string) => void;
 }
 

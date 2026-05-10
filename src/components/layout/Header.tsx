@@ -1,4 +1,3 @@
-import React from 'react';
 import { Search, Plus } from 'lucide-react';
 import { Button } from '../ui/Button';
 
@@ -38,7 +37,7 @@ export function Header({ searchQuery, onSearchChange, onAddClick, onLogoClick }:
       <div className="w-full sm:w-auto flex justify-end">
         <Button onClick={onAddClick} className="w-full sm:w-auto gap-2 rounded-full shadow-sm">
           <Plus size={18} />
-          Add Resource
+          Add Item
         </Button>
       </div>
     </header>

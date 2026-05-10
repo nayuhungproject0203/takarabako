@@ -1,7 +1,7 @@
 import React, { forwardRef } from 'react';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
+  label?: React.ReactNode;
   error?: string;
 }
 
@@ -30,7 +30,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
 Input.displayName = 'Input';
 
-export const Select = forwardRef<HTMLSelectElement, React.SelectHTMLAttributes<HTMLSelectElement> & { label?: string; error?: string }>(
+export const Select = forwardRef<HTMLSelectElement, React.SelectHTMLAttributes<HTMLSelectElement> & { label?: React.ReactNode; error?: string }>(
   ({ label, error, className = '', children, ...props }, ref) => {
     return (
       <div className="w-full flex flex-col gap-1.5">
@@ -56,7 +56,7 @@ export const Select = forwardRef<HTMLSelectElement, React.SelectHTMLAttributes<H
 );
 Select.displayName = 'Select';
 
-export const Textarea = forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label?: string; error?: string }>(
+export const Textarea = forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label?: React.ReactNode; error?: string }>(
   ({ label, error, className = '', ...props }, ref) => {
     return (
       <div className="w-full flex flex-col gap-1.5">

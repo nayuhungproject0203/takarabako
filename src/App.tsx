@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Resource, ResourceType } from './types';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { Header } from './components/layout/Header';
@@ -6,22 +6,21 @@ import { SidebarFilter } from './components/layout/SidebarFilter';
 import { ResourceCard } from './components/resource/ResourceCard';
 import { ResourceForm } from './components/resource/ResourceForm';
 import { Modal } from './components/ui/Modal';
-import { X, Box, FileText, Rss, BookOpen, Video, Globe, Mail, Quote as QuoteIcon, Book as BookIcon } from 'lucide-react';
+import { X, Box, FileText, BookOpen, Video, Globe, Mail, Quote as QuoteIcon, Book as BookIcon } from 'lucide-react';
 
 const RESOURCE_TYPES: ResourceType[] = [
-  'tool', 'article', 'blog', 'newsletter', 'course', 'video', 'website', 'quote', 'book'
+  'tool', 'essay', 'newsletter', 'video', 'course', 'website', 'book', 'quote'
 ];
 
 const COLLECTIONS: { type: ResourceType; title: string; description: string; icon: React.ElementType }[] = [
   { type: 'tool', title: 'Tools', description: 'Apps, software, and utilities.', icon: Box },
-  { type: 'article', title: 'Articles', description: 'In-depth reads and tutorials.', icon: FileText },
-  { type: 'blog', title: 'Blogs', description: 'Personal sites and ongoing series.', icon: Rss },
+  { type: 'essay', title: 'Essays', description: 'Written content worth reading.', icon: FileText },
   { type: 'newsletter', title: 'Newsletters', description: 'Subscribed feeds and emails.', icon: Mail },
-  { type: 'course', title: 'Courses', description: 'Structured learning materials.', icon: BookOpen },
   { type: 'video', title: 'Videos', description: 'Talks, tutorials, and guides.', icon: Video },
+  { type: 'course', title: 'Courses', description: 'Structured learning materials.', icon: BookOpen },
   { type: 'website', title: 'Websites', description: 'General pages and references.', icon: Globe },
-  { type: 'quote', title: 'Quotes', description: 'Saved passages and thoughts.', icon: QuoteIcon },
   { type: 'book', title: 'Bookshelf', description: 'Reading list and references.', icon: BookIcon },
+  { type: 'quote', title: 'Quotes', description: 'Saved passages and thoughts.', icon: QuoteIcon },
 ];
 
 function App() {
@@ -33,6 +32,21 @@ function App() {
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingResource, setEditingResource] = useState<Resource | undefined>(undefined);
+
+  useEffect(() => {
+    let migrated = false;
+    const migratedResources = resources.map(r => {
+      const type = r.type as string;
+      if (type === 'article' || type === 'blog') {
+        migrated = true;
+        return { ...r, type: 'essay' as ResourceType };
+      }
+      return r;
+    });
+    if (migrated) {
+      setResources(migratedResources);
+    }
+  }, [resources, setResources]);
 
   const relatedTags = useMemo(() => {
     const relevantResources = activeType === 'All' 
@@ -226,10 +240,10 @@ function App() {
           </div>
         ) : (
           <div className="text-center py-24 bg-white/50 backdrop-blur-sm rounded-2xl border border-gray-100 border-dashed max-w-2xl mx-auto">
-            <h3 className="text-xl font-medium text-gray-900 mb-2">No resources found</h3>
+            <h3 className="text-xl font-medium text-gray-900 mb-2">No items found</h3>
             <p className="text-gray-500 mb-8">
               {resources.length === 0 
-                ? "You haven't added any resources to your knowledge base yet." 
+                ? "You haven't added any items to your knowledge base yet." 
                 : "Try adjusting your search or category filters."}
             </p>
             {resources.length === 0 && (
@@ -237,7 +251,7 @@ function App() {
                 onClick={openAddModal}
                 className="bg-primary hover:bg-primary-dark text-white px-6 py-2.5 rounded-lg font-medium transition-colors shadow-sm inline-flex items-center gap-2"
               >
-                Add Your First Resource
+                Add Your First Item
               </button>
             )}
           </div>
@@ -248,7 +262,7 @@ function App() {
       <Modal 
         isOpen={isModalOpen} 
         onClose={closeModal}
-        title={editingResource ? "Edit Resource" : "Add New Resource"}
+        title={editingResource ? "Edit Item" : "Add New Item"}
       >
         <ResourceForm 
           initialData={editingResource}
