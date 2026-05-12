@@ -6,17 +6,19 @@ import { SidebarFilter } from './components/layout/SidebarFilter';
 import { ResourceCard } from './components/resource/ResourceCard';
 import { ResourceForm } from './components/resource/ResourceForm';
 import { Modal } from './components/ui/Modal';
-import { X, Box, FileText, BookOpen, Video, Globe, Mail, Quote as QuoteIcon, Book as BookIcon } from 'lucide-react';
+import { filterItems } from './utils/filterItems';
+import { X, Box, FileText, BookOpen, Youtube, Globe, Mail, Quote as QuoteIcon, Book as BookIcon, Headphones } from 'lucide-react';
 
 const RESOURCE_TYPES: ResourceType[] = [
-  'tool', 'essay', 'newsletter', 'video', 'course', 'website', 'book', 'quote'
+  'tool', 'essay', 'newsletter', 'youtube', 'podcast', 'course', 'website', 'book', 'quote'
 ];
 
 const COLLECTIONS: { type: ResourceType; title: string; description: string; icon: React.ElementType }[] = [
   { type: 'tool', title: 'Tools', description: 'Apps, software, and utilities.', icon: Box },
   { type: 'essay', title: 'Essays', description: 'Written content worth reading.', icon: FileText },
   { type: 'newsletter', title: 'Newsletters', description: 'Subscribed feeds and emails.', icon: Mail },
-  { type: 'video', title: 'Videos', description: 'Talks, tutorials, and guides.', icon: Video },
+  { type: 'youtube', title: 'YouTube', description: 'Talks, tutorials, and channels.', icon: Youtube },
+  { type: 'podcast', title: 'Podcasts', description: 'Shows and individual episodes.', icon: Headphones },
   { type: 'course', title: 'Courses', description: 'Structured learning materials.', icon: BookOpen },
   { type: 'website', title: 'Websites', description: 'General pages and references.', icon: Globe },
   { type: 'book', title: 'Bookshelf', description: 'Reading list and references.', icon: BookIcon },
@@ -26,9 +28,8 @@ const COLLECTIONS: { type: ResourceType; title: string; description: string; ico
 function App() {
   const [resources, setResources] = useLocalStorage<Resource[]>('knowbase_resources', []);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTag, setActiveTag] = useState<string>('All');
   const [activeType, setActiveType] = useState<ResourceType | 'All' | 'Home'>('Home');
-  const [activeTags, setActiveTags] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingResource, setEditingResource] = useState<Resource | undefined>(undefined);
@@ -40,6 +41,10 @@ function App() {
       if (type === 'article' || type === 'blog') {
         migrated = true;
         return { ...r, type: 'essay' as ResourceType };
+      }
+      if (type === 'video') {
+        migrated = true;
+        return { ...r, type: 'youtube' as ResourceType };
       }
       return r;
     });
@@ -61,25 +66,13 @@ function App() {
   }, [resources, activeType]);
 
   const filteredResources = useMemo(() => {
-    return resources.filter(res => {
-      const matchesSearch = searchQuery === '' || 
-        res.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        res.url.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        res.note?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        res.quote?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        res.author?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        res.source?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        res.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
-      
-      const matchesTag = activeTag === 'All' || res.tags.includes(activeTag);
-      const matchesType = (activeType === 'All' || activeType === 'Home') || res.type === activeType;
-      
-      const matchesTags = activeTags.length === 0 || 
-        activeTags.every(t => res.tags.includes(t));
-
-      return matchesSearch && matchesTag && matchesType && matchesTags;
-    }).sort((a, b) => b.createdAt - a.createdAt);
-  }, [resources, searchQuery, activeTag, activeType, activeTags]);
+    return filterItems({
+      resources,
+      searchQuery,
+      activeType,
+      selectedTags,
+    });
+  }, [resources, searchQuery, activeType, selectedTags]);
 
   const handleAddOrEdit = (data: Omit<Resource, 'id' | 'createdAt' | 'updatedAt'>) => {
     if (editingResource) {
@@ -122,16 +115,15 @@ function App() {
   };
 
   const toggleTag = (tag: string) => {
-    setActiveTags(prev => 
+    setSelectedTags(prev => 
       prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
     );
   };
 
   const handleReset = () => {
     setSearchQuery('');
-    setActiveTag('All');
     setActiveType('Home');
-    setActiveTags([]);
+    setSelectedTags([]);
   };
 
   return (
@@ -150,18 +142,19 @@ function App() {
               types={RESOURCE_TYPES}
               tags={relatedTags}
               activeType={activeType}
-              activeTag={activeTag}
+              selectedTags={selectedTags}
               onSelectType={setActiveType}
-              onSelectTag={setActiveTag}
+              onToggleTag={toggleTag}
+              onClearTags={() => setSelectedTags([])}
             />
           </div>
         </aside>
 
         <div className="flex-1 min-w-0">
-          {activeTags.length > 0 && (
+          {selectedTags.length > 0 && (
             <div className="flex items-center gap-2 flex-wrap animate-in fade-in slide-in-from-top-2 duration-300 mb-6">
               <span className="text-sm text-gray-500 font-medium">Active Filters:</span>
-              {activeTags.map(tag => (
+              {selectedTags.map(tag => (
                 <span 
                   key={tag}
                   className="inline-flex items-center gap-1 bg-primary text-white px-2.5 py-1 rounded-md text-sm font-medium shadow-sm transition-transform hover:-translate-y-0.5"
@@ -176,7 +169,7 @@ function App() {
                 </span>
               ))}
               <button 
-                onClick={() => setActiveTags([])}
+                onClick={() => setSelectedTags([])}
                 className="text-sm text-gray-400 hover:text-gray-600 underline underline-offset-2 ml-2 transition-colors"
               >
                 Clear all
@@ -184,7 +177,7 @@ function App() {
             </div>
           )}
 
-        {activeType === 'Home' && searchQuery === '' && activeTags.length === 0 ? (
+        {activeType === 'Home' && searchQuery === '' && selectedTags.length === 0 ? (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-gray-900 tracking-tight mb-2">Collections</h2>

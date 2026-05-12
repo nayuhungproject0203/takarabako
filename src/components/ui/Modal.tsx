@@ -38,7 +38,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
         aria-modal="true"
         aria-labelledby="modal-title"
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
           <h2 id="modal-title" className="text-lg font-semibold text-gray-900">
             {title}
           </h2>
@@ -51,7 +51,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
           </button>
         </div>
         
-        <div className="p-6 overflow-y-auto">
+        <div className="overflow-hidden flex flex-col flex-1">
           {children}
         </div>
       </div>

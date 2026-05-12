@@ -1,5 +1,5 @@
 import { Resource, ResourceType } from '../../types';
-import { ExternalLink, Edit2, Trash2, Box, FileText, BookOpen, Video, Globe, Mail, Quote, Copy, Book } from 'lucide-react';
+import { ExternalLink, Edit2, Trash2, Box, FileText, BookOpen, Youtube, Globe, Mail, Quote, Copy, Book, Headphones } from 'lucide-react';
 
 interface ResourceCardProps {
   resource: Resource;
@@ -14,7 +14,8 @@ const TypeIcon = ({ type, className = "" }: { type: Resource['type']; className?
     case 'tool': return <Box className={className} size={16} />;
     case 'essay': return <FileText className={className} size={16} />;
     case 'course': return <BookOpen className={className} size={16} />;
-    case 'video': return <Video className={className} size={16} />;
+    case 'youtube': return <Youtube className={className} size={16} />;
+    case 'podcast': return <Headphones className={className} size={16} />;
     case 'website': return <Globe className={className} size={16} />;
     case 'newsletter': return <Mail className={className} size={16} />;
     case 'quote': return <Quote className={className} size={16} />;
@@ -160,7 +161,7 @@ export function ResourceCard({ resource, onEdit, onDelete, onTagClick, onTypeCli
         className="flex items-center gap-1.5 text-xs text-gray-500 mb-4 bg-gray-50 hover:bg-gray-100 transition-colors self-start px-2 py-1 rounded-md"
       >
         <TypeIcon type={resource.type} />
-        <span className="capitalize">{resource.type}</span>
+        <span className="capitalize">{resource.type}{resource.kind ? ` • ${resource.kind}` : ''}</span>
       </button>
 
       {resource.note && (

@@ -4,18 +4,20 @@ interface SidebarFilterProps {
   types: ResourceType[];
   tags: string[];
   activeType: ResourceType | 'All' | 'Home';
-  activeTag: string;
+  selectedTags: string[];
   onSelectType: (type: ResourceType | 'All' | 'Home') => void;
-  onSelectTag: (tag: string) => void;
+  onToggleTag: (tag: string) => void;
+  onClearTags: () => void;
 }
 
 export function SidebarFilter({ 
   types, 
   tags, 
   activeType, 
-  activeTag, 
+  selectedTags, 
   onSelectType, 
-  onSelectTag 
+  onToggleTag,
+  onClearTags
 }: SidebarFilterProps) {
   return (
     <div className="flex flex-col gap-8">
@@ -25,7 +27,7 @@ export function SidebarFilter({
         <button
           onClick={() => {
             onSelectType('Home');
-            onSelectTag('All');
+            onClearTags();
           }}
           className={`text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${
             activeType === 'Home'
@@ -39,7 +41,7 @@ export function SidebarFilter({
         <button
           onClick={() => {
             onSelectType('All');
-            onSelectTag('All');
+            onClearTags();
           }}
           className={`text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${
             activeType === 'All'
@@ -59,7 +61,7 @@ export function SidebarFilter({
               key={type}
               onClick={() => {
                 onSelectType(type);
-                onSelectTag('All');
+                onClearTags();
               }}
               className={`text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 isActiveType
@@ -79,9 +81,9 @@ export function SidebarFilter({
           
           <div className="flex flex-col gap-1 border-l-2 border-gray-100 pl-2 ml-4">
             <button
-              onClick={() => onSelectTag('All')}
+              onClick={onClearTags}
               className={`text-left px-3 py-1.5 rounded-md text-sm transition-colors ${
-                activeTag === 'All'
+                selectedTags.length === 0
                   ? 'text-primary font-medium bg-primary/5'
                   : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
               }`}
@@ -91,9 +93,9 @@ export function SidebarFilter({
             {tags.map((tag) => (
               <button
                 key={tag}
-                onClick={() => onSelectTag(tag)}
+                onClick={() => onToggleTag(tag)}
                 className={`text-left px-3 py-1.5 rounded-md text-sm transition-colors ${
-                  activeTag === tag
+                  selectedTags.includes(tag)
                     ? 'text-primary font-medium bg-primary/5'
                     : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
                 }`}

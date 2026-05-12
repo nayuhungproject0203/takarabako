@@ -13,7 +13,7 @@ interface ResourceFormProps {
 }
 
 const RESOURCE_TYPES: ResourceType[] = [
-  'tool', 'essay', 'newsletter', 'video', 'course', 'website', 'book', 'quote'
+  'tool', 'essay', 'newsletter', 'youtube', 'podcast', 'course', 'website', 'book', 'quote'
 ];
 
 export function ResourceForm({ initialData, onSubmit, onCancel }: ResourceFormProps) {
@@ -21,6 +21,7 @@ export function ResourceForm({ initialData, onSubmit, onCancel }: ResourceFormPr
     title: initialData?.title || '',
     url: initialData?.url || '',
     type: initialData?.type || 'website' as ResourceType,
+    kind: initialData?.kind || 'work',
     tags: initialData?.tags || [],
     note: initialData?.note || '',
     quote: initialData?.quote || '',
@@ -57,7 +58,7 @@ export function ResourceForm({ initialData, onSubmit, onCancel }: ResourceFormPr
         }));
       }
 
-      if (detectedType === 'video' && (url.includes('youtube.com') || url.includes('youtu.be'))) {
+      if (detectedType === 'youtube' && (url.includes('youtube.com') || url.includes('youtu.be')) && formData.kind !== 'source') {
         setIsFetchingMetadata(true);
         const metadata = await fetchYouTubeMetadata(url);
         setIsFetchingMetadata(false);
@@ -112,20 +113,47 @@ export function ResourceForm({ initialData, onSubmit, onCancel }: ResourceFormPr
     onSubmit(formData);
   };
 
+  const getUrlLabel = () => {
+    if (formData.type === 'youtube') return formData.kind === 'source' ? 'Channel URL' : 'Video URL';
+    if (formData.type === 'podcast') return formData.kind === 'source' ? 'Podcast URL' : 'Episode URL';
+    if (formData.type === 'website') return formData.kind === 'source' ? 'Website URL' : 'URL';
+    if (formData.type === 'essay') return formData.kind === 'work' ? 'Essay URL' : 'URL';
+    return 'URL';
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-      <div className="mb-4">
-        <Select
-          label="Type"
-          value={formData.type}
-          onChange={(e) => setFormData(p => ({ ...p, type: e.target.value as ResourceType }))}
-        >
-          {RESOURCE_TYPES.map(t => (
-            <option key={t} value={t}>
-              {t.charAt(0).toUpperCase() + t.slice(1)}
-            </option>
-          ))}
-        </Select>
+    <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+      <div className="flex flex-col gap-5 p-6 overflow-y-auto">
+      <div className="mb-4 flex flex-col sm:flex-row gap-4">
+        <div className="flex-1">
+          <Select
+            label="Type"
+            value={formData.type}
+            onChange={(e) => setFormData(p => ({ ...p, type: e.target.value as ResourceType }))}
+          >
+            {RESOURCE_TYPES.map(t => (
+              <option key={t} value={t}>
+                {t === 'youtube' ? 'YouTube' : t.charAt(0).toUpperCase() + t.slice(1)}
+              </option>
+            ))}
+          </Select>
+        </div>
+        
+        {formData.type !== 'tool' && formData.type !== 'quote' && (
+          <div className="flex-1">
+            <Select
+              label="Kind"
+              value={formData.kind}
+              onChange={(e) => setFormData(p => ({ ...p, kind: e.target.value as 'source' | 'work' }))}
+            >
+              <option value="source">Source</option>
+              <option value="work">Work</option>
+            </Select>
+            <p className="text-[11px] text-gray-500 mt-1">
+              {formData.kind === 'source' ? 'A creator, channel, or website' : 'A specific video, episode, or article'}
+            </p>
+          </div>
+        )}
       </div>
 
       {formData.type === 'quote' ? (
@@ -187,18 +215,18 @@ export function ResourceForm({ initialData, onSubmit, onCancel }: ResourceFormPr
       ) : (
         <>
           <Input
-            label="Title"
+            label={formData.kind === 'source' ? "Creator / Source Name" : "Title"}
             value={formData.title}
             onChange={(e) => setFormData(p => ({ ...p, title: e.target.value }))}
             error={errors.title}
-            placeholder="e.g., React Official Documentation"
+            placeholder={formData.kind === 'source' ? "e.g. Bite-sized Japanese Podcast, Parker Chang, Kurzgesagt" : "e.g. episode title, essay title, YouTube video title"}
             autoFocus
           />
 
           <Input
             label={
               <div className="flex items-center gap-2">
-                URL
+                {getUrlLabel()}
                 {isFetchingMetadata && (
                   <span className="flex items-center gap-1 text-xs text-primary font-normal">
                     <Loader2 size={12} className="animate-spin" /> Fetching details...
@@ -213,7 +241,7 @@ export function ResourceForm({ initialData, onSubmit, onCancel }: ResourceFormPr
             placeholder="https://..."
           />
 
-          {formData.type === 'video' && (
+          {formData.kind !== 'source' && formData.type === 'youtube' && (
             <Input
               label="Creator / Channel (Optional)"
               value={formData.author}
@@ -222,7 +250,7 @@ export function ResourceForm({ initialData, onSubmit, onCancel }: ResourceFormPr
             />
           )}
 
-          {(formData.type === 'essay' || formData.type === 'website') && (
+          {formData.kind !== 'source' && (formData.type === 'essay' || formData.type === 'website') && (
             <>
               <Input
                 label="Author (Optional)"
@@ -255,7 +283,8 @@ export function ResourceForm({ initialData, onSubmit, onCancel }: ResourceFormPr
         rows={3}
       />
 
-      <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+      </div>
+      <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 shrink-0 bg-gray-50/30">
         <Button type="button" variant="ghost" onClick={onCancel}>
           Cancel
         </Button>

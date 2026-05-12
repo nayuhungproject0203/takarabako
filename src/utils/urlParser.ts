@@ -8,9 +8,9 @@ export function detectItemType(url: string): ResourceType | null {
     const hostname = parsedUrl.hostname.toLowerCase();
     const pathname = parsedUrl.pathname.toLowerCase();
 
-    // Video
+    // YouTube
     if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) {
-      return 'video';
+      return 'youtube';
     }
     
     // Newsletter

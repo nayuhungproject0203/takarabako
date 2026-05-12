@@ -1,5 +1,7 @@
 # Takarabako (Personal Knowledge Base) - Project Log
 
+このドキュメントは、プロジェクト「Takarabako」の設計の変遷、更新履歴、およびディレクトリとファイルの構造を記録したものです。
+
 這份文件記錄了本專案（原為簡單的 Personal Knowledge Base，後定名為 Takarabako）的設計迭代過程、版本更新歷史，以及目前專案架構中各個資料夾與檔案的功用。
 
 ---
@@ -40,6 +42,18 @@
   - **智慧網址判斷**：實作 `urlParser.ts` 工具，當使用者在表單貼上網址時，會自動判斷網域並切換至對應的類型（例如：`youtube.com` → Video, `substack.com` → Newsletter, `goodreads.com` → Book）。
   - **YouTube Metadata 自動抓取**：利用 YouTube 官方無 CORS 限制的 oEmbed API，在貼上影片網址後自動抓取並填入「影片標題」與「頻道名稱」。
   - **無縫表單體驗**：為 Video 類型新增了選填的 `Creator / Channel` 欄位來存放頻道資訊，並在網址欄位加入即時的 Loading 提示。所有自動填寫行為皆不會覆蓋使用者的手動輸入，保留最大彈性。
+
+### v1.5.0 - 資料模型擴充與分類精煉 (Data Model Expansion & Classification Refinement)
+- **設計目標**：讓使用者能區分「來源/創作者」與「單一作品」，並優化底層標籤過濾機制與表單操作體驗。
+- **核心變更**：
+  - **標籤過濾狀態整合**：將側邊欄與卡片的標籤篩選邏輯，重構成單一的 `selectedTags` 陣列狀態，確保操作行為一致且無冗餘狀態。
+  - **新增 Podcast 類型**：加入 `podcast` 類型與專屬圖示，擴展知識庫的涵蓋範圍。
+  - **Video 正名為 YouTube**：將原先的 `Video` 類型全面正名為 `YouTube` (包含內部資料模型與 UI 顯示)，並加入自動資料升級機制以相容舊資料。
+  - **Source vs. Work 分級機制**：在資源架構中加入 `kind` 欄位。新增資源時可選擇該項目是「來源 (Source，如：YouTube 頻道、Podcast 節目)」還是「作品 (Work，如：單支影片、單集 Podcast)」。
+  - **動態表單與 UI 佈局優化**：
+    - 表單會根據選擇的 `kind` 動態調整欄位名稱（例如：切換顯示「Channel URL」或「Video URL」），並在選擇「來源」時自動隱藏多餘的創作者欄位。
+    - YouTube Metadata 抓取功能現在會聰明地跳過「來源」類別的網址，避免強行抓取頻道頁面發生錯誤。
+    - 使用 Flexbox 重構 Modal 佈局，讓表單主體可獨立捲動，底部的「儲存/取消」按鈕永遠固定可見不被裁切。
 
 ---
 
